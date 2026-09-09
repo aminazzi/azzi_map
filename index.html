@@ -4,20 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>العالم 3D</title>
+  <title>خريطة العالم 3D</title>
 
   <style>
     * {
       box-sizing: border-box;
     }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #000;
+      background: white;
       font-family: Arial, sans-serif;
     }
 
@@ -35,20 +36,20 @@
       padding: 12px 22px;
       border-radius: 15px;
 
-      color: white;
-      background: rgba(10, 20, 40, .85);
+      color: #1e293b;
+      background: rgba(255, 255, 255, 0.9);
 
       font-size: 21px;
       font-weight: bold;
 
-      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
     }
   </style>
 </head>
 
 <body>
 
-  <div class="title">🌍 العالم 3D</div>
+  <div class="title">🌍 خريطة العالم 3D</div>
 
   <div id="globe"></div>
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
@@ -57,28 +58,31 @@
 
   <script>
 
-    const container = document.getElementById("globe");
+    const container =
+      document.getElementById("globe");
 
-    const world = Globe()(container)
+    const world =
+      Globe()(container)
 
-      .width(window.innerWidth)
-      .height(window.innerHeight)
+        .width(window.innerWidth)
 
-      .backgroundColor("#000814")
+        .height(window.innerHeight)
 
-      .globeImageUrl(
-        "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
-      )
+        .backgroundColor("#ffffff")
 
-      .bumpImageUrl(
-        "https://unpkg.com/three-globe/example/img/earth-topology.png"
-      )
+        .globeImageUrl(
+          "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+        )
 
-      .showAtmosphere(true)
+        .bumpImageUrl(
+          "https://unpkg.com/three-globe/example/img/earth-topology.png"
+        )
 
-      .atmosphereColor("#4cc9f0")
+        .showAtmosphere(true)
 
-      .atmosphereAltitude(0.15);
+        .atmosphereColor("#8ed6ff")
+
+        .atmosphereAltitude(0.12);
 
 
     world.pointOfView({
@@ -90,35 +94,35 @@
 
     world.controls().autoRotate = true;
 
-    world.controls().autoRotateSpeed = 0.3;
+    world.controls().autoRotateSpeed = 0.25;
 
     world.controls().enableZoom = true;
 
     world.controls().enablePan = false;
-/*
-     * تحميل حدود الدول
-     */
-
-    fetch(
+fetch(
       "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
     )
+
       .then(response => response.json())
 
-      .then(countries => {
+      .then(data => {
 
         world
-          .polygonsData(countries.features)
+
+          .polygonsData(
+            data.features
+          )
 
           .polygonCapColor(() => {
-            return "rgba(40, 140, 220, 0.20)";
+            return "rgba(255,255,255,0.05)";
           })
 
           .polygonSideColor(() => {
-            return "rgba(0, 80, 150, 0.20)";
+            return "rgba(30,100,180,0.15)";
           })
 
           .polygonStrokeColor(() => {
-            return "rgba(255,255,255,0.7)";
+            return "rgba(30,80,130,0.8)";
           })
 
           .polygonAltitude(0.006)
@@ -126,14 +130,16 @@
 
           .onPolygonHover(country => {
 
-            world.polygonCapColor(feature => {
+            world.polygonCapColor(
+              feature => {
 
-              if (feature === country) {
-                return "rgba(0, 220, 255, 0.65)";
+                if (feature === country) {
+                  return "rgba(0,160,230,0.55)";
+                }
+
+                return "rgba(255,255,255,0.05)";
               }
-
-              return "rgba(40, 140, 220, 0.20)";
-            });
+            );
 
           })
 
@@ -145,7 +151,9 @@
               country.properties.name ||
               "دولة";
 
-            alert("الدولة: " + name);
+            alert(
+              "الدولة: " + name
+            );
 
           });
 
@@ -154,38 +162,38 @@
       .catch(error => {
 
         console.error(
-          "حدث خطأ أثناء تحميل الدول:",
+          "خطأ في تحميل الدول:",
           error
         );
 
       });
-/*
-     * إيقاف الدوران أثناء تحريك الكرة
-     */
+      world.controls()
+      .addEventListener(
+        "start",
+        () => {
 
-    world.controls().addEventListener(
-      "start",
-      () => {
-        world.controls().autoRotate = false;
-      }
-    );
+          world.controls()
+            .autoRotate = false;
 
-
-    world.controls().addEventListener(
-      "end",
-      () => {
-
-        setTimeout(() => {
-          world.controls().autoRotate = true;
-        }, 3000);
-
-      }
-    );
+        }
+      );
 
 
-    /*
-     * دعم الهاتف والكمبيوتر
-     */
+    world.controls()
+      .addEventListener(
+        "end",
+        () => {
+
+          setTimeout(() => {
+
+            world.controls()
+              .autoRotate = true;
+
+          }, 3000);
+
+        }
+      );
+
 
     window.addEventListener(
       "resize",
@@ -193,6 +201,7 @@
 
         world
           .width(window.innerWidth)
+
           .height(window.innerHeight);
 
       }
@@ -201,4 +210,4 @@
   </script>
 
 </body>
-</html>
+</html>      
