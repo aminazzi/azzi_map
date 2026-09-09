@@ -4,21 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>خريطة العالم 3D</title>
+  <title>العالم 3D</title>
 
   <style>
     * {
       box-sizing: border-box;
     }
 
-    html,
-    body {
+    html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #020617;
+      background: #000;
       font-family: Arial, sans-serif;
     }
 
@@ -28,137 +27,176 @@
     }
 
     .title {
-      position: absolute;
+      position: fixed;
       top: 20px;
       right: 20px;
-      z-index: 10;
+      z-index: 100;
 
-      padding: 12px 20px;
-      border-radius: 14px;
+      padding: 12px 22px;
+      border-radius: 15px;
 
       color: white;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(10, 20, 40, .85);
 
       font-size: 21px;
       font-weight: bold;
 
-      box-shadow: 0 5px 25px rgba(0,0,0,.3);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(10px);
     }
+  </style>
+</head>
 
-    .hint {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      z-index: 10;
+<body>
 
-      padding: 10px 15px;
-      border-radius: 10px;
+  <div class="title">🌍 العالم 3D</div>
 
-      color: #e2e8f0;
-      background: rgba(15
-<!-- مكتبة Three.js -->
-  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <div id="globe"></div>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 
-  <!-- مكتبة Globe.gl -->
   <script src="https://unpkg.com/globe.gl"></script>
 
   <script>
-    const globeContainer = document.getElementById("globe");
 
-    const globe = Globe()(globeContainer)
-      .backgroundColor("#020617")
+    const container = document.getElementById("globe");
 
-      // صورة سطح الأرض
+    const world = Globe()(container)
+
+      .width(window.innerWidth)
+      .height(window.innerHeight)
+
+      .backgroundColor("#000814")
+
       .globeImageUrl(
         "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
       )
 
-      // إضاءة ليلية
-      .nightSkyImageUrl(
-        "https://unpkg.com/three-globe/example/img/night-sky.png"
+      .bumpImageUrl(
+        "https://unpkg.com/three-globe/example/img/earth-topology.png"
       )
 
-      // حدود الدول
-      .polygonStrokeColor(() => "#ffffff")
-      .polygonSideColor(() => "rgba(0,0,0,0.15)")
-      .polygonCapColor(() => "rgba(30, 100, 180, 0.12)")
+      .showAtmosphere(true)
 
-      // عرض الدول
-      .polygonsTransitionDuration(300);
+      .atmosphereColor("#4cc9f0")
 
-    // حجم الكرة
-    globe.pointOfView({
+      .atmosphereAltitude(0.15);
+
+
+    world.pointOfView({
       lat: 20,
       lng: 0,
-      altitude: 2.3
+      altitude: 2.5
     });
 
-    // دوران تلقائي
-    globe.controls().autoRotate = true;
-    globe.controls().autoRotateSpeed = 0.35;
 
-    // السماح بالتحكم
-    globe.controls().enableZoom = true;
-    globe.controls().enablePan = false;
-// تحميل حدود الدول
+    world.controls().autoRotate = true;
+
+    world.controls().autoRotateSpeed = 0.3;
+
+    world.controls().enableZoom = true;
+
+    world.controls().enablePan = false;
+/*
+     * تحميل حدود الدول
+     */
+
     fetch(
       "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
     )
       .then(response => response.json())
-      .then(data => {
 
-        globe
-          .polygonsData(data.features)
+      .then(countries => {
 
-          // لون الدولة
-          .polygonCapColor(feature => {
-            return "rgba(30, 120, 190, 0.35)";
+        world
+          .polygonsData(countries.features)
+
+          .polygonCapColor(() => {
+            return "rgba(40, 140, 220, 0.20)";
           })
 
-          // عند مرور الماوس
-          .polygonAltitude(feature => {
-            return 0.01;
+          .polygonSideColor(() => {
+            return "rgba(0, 80, 150, 0.20)";
           })
 
-          // عند الضغط على الدولة
-          .onPolygonClick(feature => {
+          .polygonStrokeColor(() => {
+            return "rgba(255,255,255,0.7)";
+          })
+
+          .polygonAltitude(0.006)
+
+
+          .onPolygonHover(country => {
+
+            world.polygonCapColor(feature => {
+
+              if (feature === country) {
+                return "rgba(0, 220, 255, 0.65)";
+              }
+
+              return "rgba(40, 140, 220, 0.20)";
+            });
+
+          })
+
+
+          .onPolygonClick(country => {
 
             const name =
-              feature.properties.ADMIN ||
-              feature.properties.name ||
+              country.properties.ADMIN ||
+              country.properties.name ||
               "دولة";
 
-            alert("لقد اخترت: " + name);
+            alert("الدولة: " + name);
 
-          })
+          });
 
-          // عند مرور الم
-// جعل الخريطة متجاوبة مع حجم الشاشة
-    function resizeGlobe() {
+      })
 
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+      .catch(error => {
 
-      globe
-        .width(width)
-        .height(height);
-    }
+        console.error(
+          "حدث خطأ أثناء تحميل الدول:",
+          error
+        );
 
-    window.addEventListener("resize", resizeGlobe);
+      });
+/*
+     * إيقاف الدوران أثناء تحريك الكرة
+     */
 
-    resizeGlobe();
+    world.controls().addEventListener(
+      "start",
+      () => {
+        world.controls().autoRotate = false;
+      }
+    );
 
-    // إيقاف الدوران مؤقتًا عند التفاعل
-    globe.controls().addEventListener("start", () => {
-      globe.controls().autoRotate = false;
-    });
 
-    globe.controls().addEventListener("end", () => {
-      setTimeout(() => {
-        globe.controls().autoRotate = true;
-      }, 3000);
-    });
+    world.controls().addEventListener(
+      "end",
+      () => {
+
+        setTimeout(() => {
+          world.controls().autoRotate = true;
+        }, 3000);
+
+      }
+    );
+
+
+    /*
+     * دعم الهاتف والكمبيوتر
+     */
+
+    window.addEventListener(
+      "resize",
+      () => {
+
+        world
+          .width(window.innerWidth)
+          .height(window.innerHeight);
+
+      }
+    );
 
   </script>
 
