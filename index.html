@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
 
@@ -17,45 +18,53 @@
       height: 100%;
       overflow: hidden;
       background: white;
-      font-family: Arial, sans-serif;
     }
 
-    #globe {
+    #earth {
       width: 100%;
       height: 100%;
-      position: fixed;
-      inset: 0;
     }
 
     .title {
       position: fixed;
       top: 20px;
       right: 20px;
-      z-index: 10;
+      z-index: 100;
 
       background: white;
-      color: #1e293b;
 
-      padding: 14px 24px;
+      padding: 14px 22px;
+
       border-radius: 18px;
 
+      color: #1e293b;
+
+      font-family: Arial, sans-serif;
+
       font-size: 22px;
+
       font-weight: bold;
 
       box-shadow:
-        0 5px 25px rgba(0,0,0,.12);
+        0 5px 25px rgba(0,0,0,0.12);
     }
 
-    .loading {
+    #error {
       position: fixed;
       top: 50%;
       left: 50%;
+
       transform: translate(-50%, -50%);
 
-      color: #334155;
+      font-family: Arial, sans-serif;
+
       font-size: 18px;
 
-      z-index: 5;
+      color: #334155;
+
+      text-align: center;
+
+      display: none;
     }
   </style>
 </head>
@@ -66,210 +75,252 @@
     🌍 خريطة العالم 3D
   </div>
 
-  <div class="loading" id="loading">
-    جارٍ تحميل الخريطة...
+  <div id="error">
+    لا يمكن تشغيل الخريطة 3D على هذا المتصفح.
   </div>
 
-  <div id="globe"></div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <div id="earth"></div>
+<script type="importmap">
+  {
+    "imports": {
+      "three":
+      "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
 
-  <script src="https://cdn.jsdelivr.net/npm/globe.gl/dist/globe.gl.min.js"></script>
+      "three/addons/":
+      "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
 
-  <script>
 
-    const loading =
-      document.getElementById("loading");
+  <script type="module">
+
+    import * as THREE from "three";
+
+    import { OrbitControls }
+      from "three/addons/controls/OrbitControls.js";
+
 
     const container =
-      document.getElementById("globe");
+      document.getElementById("earth");
 
 
-    const globe = Globe()(container);
+    const scene =
+      new THREE.Scene();
 
 
-    globe
-      .backgroundColor("#ffffff")
-
-      .globeImageUrl(
-        "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg"
-      )
-
-      .bumpImageUrl(
-        "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png"
-      )
-
-      .showAtmosphere(true)
-
-      .atmosphereColor("#7dd3fc")
-
-      .atmosphereAltitude(0.12);
+    scene.background =
+      new THREE.Color(0xffffff);
 
 
-    globe.pointOfView({
-      lat: 20,
-      lng: 0,
-      altitude: 2.4
-    });
+    const camera =
+      new THREE.PerspectiveCamera(
+        45,
+        window.innerWidth /
+        window.innerHeight,
+        0.1,
+        1000
+      );
 
 
-    globe.controls().enableZoom = true;
-
-    globe.controls().enablePan = false;
-
-    globe.controls().autoRotate = true;
-
-    globe.controls().autoRotateSpeed = 0.25;
+    camera.position.z = 3;
 
 
-    loading.style.display = "none";
+    const renderer =
+      new THREE.WebGLRenderer({
+        antialias: true
+      });
+
+
+    renderer.setPixelRatio(
+      Math.min(window.devicePixelRatio, 2)
+    );
+
+
+    renderer.setSize(
+      window.innerWidth,
+      window.innerHeight
+    );
+
+
+    container.appendChild(renderer.domElement);
+
+
+    const controls =
+      new OrbitControls(
+        camera,
+        renderer.domElement
+      );
+
+
+    controls.enableDamping = true;
+
+    controls.enablePan = false;
+
+    controls.minDistance = 1.5;
+
+    controls.maxDistance = 5;
 /*
-     * تحميل الدول
+     * الكرة الأرضية
      */
 
-    fetch(
-      "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
-    )
-
-    .then(function(response) {
-      return response.json();
-    })
-
-    .then(function(data) {
-
-      globe
-        .polygonsData(data.features)
-
-        .polygonAltitude(0.008)
-
-        .polygonCapColor(function() {
-          return "rgba(30, 130, 200, 0.18)";
-        })
-
-        .polygonSideColor(function() {
-          return "rgba(30, 100, 180, 0.15)";
-        })
-
-        .polygonStrokeColor(function() {
-          return "rgba(30, 80, 130, 0.8)";
-        })
-
-        .polygonLabel(function(country) {
-
-          const name =
-            country.properties.ADMIN ||
-            country.properties.name ||
-            "دولة";
-
-          return `
-            <div style="
-              background:white;
-              padding:8px 12px;
-              border-radius:8px;
-              color:#1e293b;
-              font-size:14px;
-            ">
-              ${name}
-            </div>
-          `;
-
-        })
-
-        .onPolygonClick(function(country) {
-
-          const name =
-            country.properties.ADMIN ||
-            country.properties.name ||
-            "دولة";
-
-          alert("الدولة: " + name);
-
-        })
-
-        .onPolygonHover(function(country) {
-
-          globe.polygonCapColor(
-            function(item) {
-
-              if (item === country) {
-                return "rgba(14, 165, 233, 0.65)";
-              }
-return "rgba(30, 130, 200, 0.18)";
-            }
-          );
-
-        });
-
-    })
-
-    .catch(function(error) {
-
-      console.error(error);
-
-      loading.innerHTML =
-        "تعذر تحميل بيانات الدول";
-
-    });
-     /*
-     * إيقاف الدوران أثناء لمس الخريطة
-     */
-
-    globe.controls().addEventListener(
-      "start",
-      function() {
-
-        globe.controls()
-          .autoRotate = false;
-
-      }
-    );
+    const geometry =
+      new THREE.SphereGeometry(
+        1,
+        64,
+        64
+      );
 
 
     /*
-     * إعادة الدوران بعد 3 ثوانٍ
+     * لون الأرض الأساسي
+     * سيظهر حتى لو فشلت صورة الخريطة
      */
 
-    globe.controls().addEventListener(
-      "end",
-      function() {
+    const material =
+      new THREE.MeshStandardMaterial({
+        color: 0x2389c9,
+        roughness: 0.8,
+        metalness: 0
+      });
 
-        setTimeout(function() {
 
-          globe.controls()
-            .autoRotate = true;
+    const earth =
+      new THREE.Mesh(
+        geometry,
+        material
+      );
 
-        }, 3000);
 
-      }
-    );
+    scene.add(earth);
 
 
     /*
-     * دعم تغيير حجم الشاشة
+     * إضاءة
+     */
+
+    const light =
+      new THREE.DirectionalLight(
+        0xffffff,
+        3
+      );
+
+
+    light.position.set(
+      5,
+      3,
+      5
+    );
+
+
+    scene.add(light);
+
+
+    const ambient =
+      new THREE.AmbientLight(
+        0xffffff,
+        1.5
+      );
+
+
+    scene.add(ambient);
+
+
+    /*
+     * محاولة إضافة صورة الأرض
+     */
+
+    const loader =
+      new THREE.TextureLoader();
+
+
+    loader.load(
+      "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
+
+      function(texture) {
+
+        material.map = texture;
+
+        material.color.set(0xffffff);
+
+        material.needsUpdate = true;
+
+      },
+
+      undefined,
+
+      function() {
+
+        console.log(
+          "تم استخدام الكرة بدون صورة الأرض"
+        );
+
+      }
+    );
+/*
+     * دوران تلقائي
+     */
+
+    function animate() {
+
+      requestAnimationFrame(animate);
+
+
+      earth.rotation.y += 0.0015;
+
+
+      controls.update();
+
+
+      renderer.render(
+        scene,
+        camera
+      );
+
+    }
+
+
+    animate();
+
+
+    /*
+     * تغيير حجم الخريطة
      */
 
     window.addEventListener(
       "resize",
       function() {
 
-        globe
-          .width(window.innerWidth)
-          .height(window.innerHeight);
+        camera.aspect =
+          window.innerWidth /
+          window.innerHeight;
+
+
+        camera.updateProjectionMatrix();
+
+
+        renderer.setSize(
+          window.innerWidth,
+          window.innerHeight
+        );
 
       }
     );
 
 
     /*
-     * الحجم الأول
+     * اختبار WebGL
      */
 
-    globe
-      .width(window.innerWidth)
-      .height(window.innerHeight);
+    if (!renderer.getContext()) {
+
+      document.getElementById(
+        "error"
+      ).style.display = "block";
+
+    }
 
   </script>
 
 </body>
-</html>    
-
-          
+</html>
