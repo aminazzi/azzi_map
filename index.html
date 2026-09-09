@@ -319,7 +319,16 @@
       ).style.display = "block";
 
     }
-
+<script>
+fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson")
+.then(r => r.json())
+.then(data => {
+  world
+    .polygonsData(data.features)
+    .polygonStrokeColor(() => "#333")
+    .polygonCapColor(() => "rgba(40,140,220,0.15)")
+    .polygonLabel(d => `<b>${d.properties.ADMIN}</b>`);
+});
   </script>
 
 </body>
