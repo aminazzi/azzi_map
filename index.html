@@ -65,7 +65,25 @@ border-radius:10px;
 
 font-size:12px;
 }
+/* تحسين مظهر مشهد Three.js */
 
+#space{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    background:#000;
+}
+
+#space canvas{
+    display:block;
+    width:100% !important;
+    height:100% !important;
+    image-rendering:auto;
+    filter:
+        brightness(1.12)
+        contrast(1.08)
+        saturate(1.15);
+}
 </style>
 
 </head>
@@ -170,67 +188,36 @@ new THREE.Color(0x000000);
 
 /* نجوم الخلفية */
 
-const starGeometry =
-new THREE.BufferGeometry();
+const starCanvas =
+document.createElement("canvas");
 
+starCanvas.width = 64;
+starCanvas.height = 64;
 
-const starCount = 7000;
+const starCtx =
+starCanvas.getContext("2d");
 
-const starPositions =
-new Float32Array(
-starCount * 3
+const gradient =
+starCtx.createRadialGradient(
+32,32,0,
+32,32,32
 );
 
+gradient.addColorStop(0,"rgba(255,255,255,1)");
+gradient.addColorStop(0.25,"rgba(255,255,255,0.9)");
+gradient.addColorStop(0.6,"rgba(255,255,255,0.35)");
+gradient.addColorStop(1,"rgba(255,255,255,0)");
 
-for(
-let i=0;
-i<starCount;
-i++
-){
+starCtx.fillStyle = gradient;
 
-const r =
-350 + Math.random()*500;
-
-const theta =
-Math.random()*Math.PI*2;
-
-const phi =
-Math.acos(
-2*Math.random()-1
-);
+starCtx.beginPath();
+starCtx.arc(32,32,32,0,Math.PI*2);
+starCtx.fill();
 
 
-starPositions[
-i*3
-] =
-r*
-Math.sin(phi)*
-Math.cos(theta);
-
-
-starPositions[
-i*3+1
-] =
-r*
-Math.cos(phi);
-
-
-starPositions[
-i*3+2
-] =
-r*
-Math.sin(phi)*
-Math.sin(theta);
-
-}
-
-
-starGeometry.setAttribute(
-"position",
-new THREE.BufferAttribute(
-starPositions,
-3
-)
+const starTexture =
+new THREE.CanvasTexture(
+starCanvas
 );
 
 
@@ -239,9 +226,17 @@ new THREE.PointsMaterial({
 
 color:0xffffff,
 
-size:0.7,
+size:1.8,
 
-sizeAttenuation:true
+sizeAttenuation:true,
+
+map:starTexture,
+
+transparent:true,
+
+alphaTest:0.01,
+
+depthWrite:false
 
 });
 
@@ -370,60 +365,57 @@ sunLight.position.set(
 scene.add(sunLight);
 
 
-/* الشمس */
+/* =========================================
+   الشمس
+   ========================================= */
 
-const sunGeometry =
-new THREE.SphereGeometry(
-2.2,
-64,
-64
+const sunTexture =
+loader.load(
+"https://threejs.org/examples/textures/planets/sun.jpg"
 );
 
-
-const sunMaterial =
-new THREE.MeshBasicMaterial({
-color:0xffcc33
-});
+sunTexture.encoding =
+THREE.sRGBEncoding;
 
 
 const sun =
 new THREE.Mesh(
-sunGeometry,
-sunMaterial
+
+    new THREE.SphereGeometry(
+        2.2,
+        64,
+        64
+    ),
+
+    new THREE.MeshBasicMaterial({
+
+        map:sunTexture
+
+    })
+
 );
 
-scene.add(sun);
+scene.add(
+    sun
+);
 /* هالة الشمس */
 
-const glowGeometry =
-new THREE.SphereGeometry(
-2.7,
-48,
-48
+const sunLight =
+new THREE.PointLight(
+    0xffffff,
+    6,
+    1000
 );
 
-
-const glowMaterial =
-new THREE.MeshBasicMaterial({
-
-color:0xffaa22,
-
-transparent:true,
-
-opacity:0.18,
-
-side:THREE.BackSide
-
-});
-
-
-const glow =
-new THREE.Mesh(
-glowGeometry,
-glowMaterial
+sunLight.position.set(
+    0,
+    0,
+    0
 );
 
-scene.add(glow);
+scene.add(
+    sunLight
+);
 
 
 /* مجموعة النظام الشمسي */
@@ -487,70 +479,239 @@ solarSystem.add(mesh);
 return mesh;
 
 }
-/* الكواكب */
+
+/* =========================================
+   كواكب بخامات واقعية
+   ========================================= */
+
+const loader =
+new THREE.TextureLoader();
+
+
+function realisticPlanet(
+    size,
+    textureURL,
+    distance
+){
+
+    const texture =
+    loader.load(textureURL);
+
+    texture.encoding =
+    THREE.sRGBEncoding;
+
+    texture.anisotropy =
+    renderer.capabilities
+    .getMaxAnisotropy();
+
+
+    const geometry =
+    new THREE.SphereGeometry(
+        size,
+        64,
+        64
+    );
+
+
+    const material =
+    new THREE.MeshPhongMaterial({
+
+        map:texture,
+
+        shininess:8
+
+    });
+
+
+    const planet =
+    new THREE.Mesh(
+        geometry,
+        material
+    );
+
+
+    planet.position.x =
+    distance;
+
+
+    solarSystem.add(
+        planet
+    );
+
+
+    return planet;
+}
+
+
+/* عطارد */
 
 const mercury =
-planet(
-0.22,
-0x9b8d7a,
-4.2
+realisticPlanet(
+
+    0.22,
+
+    "https://threejs.org/examples/textures/planets/mercury.jpg",
+
+    4.2
+
 );
 
+
+/* الزهرة */
 
 const venus =
-planet(
-0.38,
-0xd8b36a,
-5.8
+realisticPlanet(
+
+    0.38,
+
+    "https://threejs.org/examples/textures/planets/venus.jpg",
+
+    5.8
+
 );
+/* الأرض */
+
+const earthTexture =
+loader.load(
+"https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg"
+);
+
+earthTexture.encoding =
+THREE.sRGBEncoding;
+
+earthTexture.anisotropy =
+renderer.capabilities
+.getMaxAnisotropy();
 
 
 const earth =
-planet(
-0.42,
-0x3c78d8,
-7.4
+new THREE.Mesh(
+
+    new THREE.SphereGeometry(
+        0.42,
+        64,
+        64
+    ),
+
+    new THREE.MeshPhongMaterial({
+
+        map:earthTexture,
+
+        shininess:25
+
+    })
+
 );
 
+earth.position.x =
+7.4;
+
+solarSystem.add(
+    earth
+);
+/* =========================================
+   غلاف جوي للأرض
+   ========================================= */
+
+const atmosphereGeometry =
+new THREE.SphereGeometry(
+    0.435,
+    64,
+    64
+);
+
+
+const atmosphereMaterial =
+new THREE.MeshPhongMaterial({
+
+    color:0x4da6ff,
+
+    transparent:true,
+
+    opacity:0.16,
+
+    side:THREE.BackSide
+
+});
+
+
+const atmosphere =
+new THREE.Mesh(
+    atmosphereGeometry,
+    atmosphereMaterial
+);
+
+
+earth.add(
+    atmosphere
+);
+
+/* المريخ */
 
 const mars =
-planet(
-0.31,
-0xb34b32,
-9.1
+realisticPlanet(
+
+    0.31,
+
+    "https://threejs.org/examples/textures/planets/mars_1k_color.jpg",
+
+    9.1
+
 );
 
+
+/* المشتري */
 
 const jupiter =
-planet(
-1.05,
-0xc89d75,
-12.5
-);
+realisticPlanet(
 
+    1.05,
+
+    "https://threejs.org/examples/textures/planets/jupiter.jpg",
+
+    12.5
+
+);
+ /* زحل */
 
 const saturn =
-planet(
-0.90,
-0xd7c08a,
-16.0
+realisticPlanet(
+
+    0.90,
+
+    "https://threejs.org/examples/textures/planets/saturn.jpg",
+
+    16
+
 );
 
+
+/* أورانوس */
 
 const uranus =
-planet(
-0.58,
-0x79d7e6,
-19.5
+realisticPlanet(
+
+    0.58,
+
+    "https://threejs.org/examples/textures/planets/uranus.jpg",
+
+    19.5
+
 );
 
+
+/* نبتون */
 
 const neptune =
-planet(
-0.56,
-0x3c63d9,
-22.8
-);
+realisticPlanet(
+
+    0.56,
+
+    "https://threejs.org/examples/textures/planets/neptune.jpg",
+
+    22.8
+
+); 
 /* حلقات زحل */
 
 const saturnRingGeometry =
