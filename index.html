@@ -1,34 +1,26 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
 
 <meta charset="UTF-8">
 
 <meta name="viewport"
-content="width=device-width,
-initial-scale=1.0,
-maximum-scale=1.0,
-user-scalable=no">
+content="width=device-width,initial-scale=1.0">
 
 <title>AZZI WORLD 3D</title>
 
 <style>
 
-html,
-body{
+html,body{
 margin:0;
-padding:0;
 width:100%;
 height:100%;
 overflow:hidden;
-background:#ffffff;
+background:#fff;
 font-family:Arial,sans-serif;
 }
 
 #globe{
-position:fixed;
-inset:0;
 width:100%;
 height:100%;
 }
@@ -37,49 +29,26 @@ height:100%;
 position:fixed;
 top:18px;
 right:18px;
-z-index:10000;
-
+z-index:10;
 padding:12px 20px;
-
-background:#ffffff;
+background:#fff;
 color:#111827;
-
 border-radius:16px;
-
 font-size:20px;
 font-weight:bold;
-
-box-shadow:
-0 4px 20px
-rgba(0,0,0,.15);
-
-pointer-events:none;
+box-shadow:0 4px 20px rgba(0,0,0,.15);
 }
 
-.loading{
+#loading{
 position:fixed;
-left:50%;
 top:50%;
-
-transform:
-translate(-50%,-50%);
-
-z-index:10000;
-
-padding:14px 20px;
-
-background:#ffffff;
-color:#111827;
-
-border-radius:14px;
-
-box-shadow:
-0 5px 25px
-rgba(0,0,0,.18);
-
-font-size:16px;
-
-white-space:nowrap;
+left:50%;
+transform:translate(-50%,-50%);
+z-index:20;
+padding:12px 18px;
+background:#fff;
+border-radius:12px;
+box-shadow:0 4px 20px rgba(0,0,0,.15);
 }
 
 </style>
@@ -92,248 +61,138 @@ white-space:nowrap;
 AZZI WORLD 🌍
 </div>
 
-<div
-class="loading"
-id="loading">
-
-جارٍ تحميل خريطة العالم...
-
+<div id="loading">
+جارٍ تحميل الخريطة...
 </div>
 
 <div id="globe"></div>
-<!-- Three.js -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 
-<script src="
-https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js
-"></script>
-
-<script src="
-https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js
-"></script>
-
-
-<!-- D3 Geo لحساب مركز الدولة -->
-
-<script src="
-https://cdn.jsdelivr.net/npm/d3-geo@3/dist/d3-geo.min.js
-"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
 <script>
 
-
 const container =
-document.getElementById(
-"globe"
-);
-
+document.getElementById("globe");
 
 const loading =
-document.getElementById(
-"loading"
-);
+document.getElementById("loading");
 
-
-/* المشهد */
 
 const scene =
 new THREE.Scene();
 
 scene.background =
-new THREE.Color(
-0xffffff
-);
+new THREE.Color(0xffffff);
 
-
-/* الكاميرا */
 
 const camera =
 new THREE.PerspectiveCamera(
-
-42,
-
-window.innerWidth /
-window.innerHeight,
-
+45,
+window.innerWidth/window.innerHeight,
 0.1,
-
-1000
-
+100
 );
 
 camera.position.set(
 0,
 0,
-3.15
+3
 );
 
 
-/* الرندر */
-
 const renderer =
 new THREE.WebGLRenderer({
-
-antialias:true,
-
-alpha:false
-
+antialias:true
 });
 
 
 renderer.setPixelRatio(
-
 Math.min(
-
 window.devicePixelRatio || 1,
-
 2
-
 ));
 
 
 renderer.setSize(
-
 window.innerWidth,
-
 window.innerHeight
-
 );
-
-
-renderer.outputEncoding =
-THREE.sRGBEncoding;
 
 
 container.appendChild(
 renderer.domElement
 );
-
-
-/* التحكم بالكرة */
-
 const controls =
 new THREE.OrbitControls(
-
 camera,
-
 renderer.domElement
-
 );
 
+controls.enableDamping = true;
+controls.enablePan = false;
 
-controls.enableDamping =
-true;
+controls.minDistance = 1.5;
+controls.maxDistance = 5;
 
-controls.dampingFactor =
-0.06;
-
-controls.enablePan =
-false;
-
-controls.minDistance =
-1.55;
-
-controls.maxDistance =
-5;
-
-controls.rotateSpeed =
-0.45;
-
-controls.zoomSpeed =
-0.7;
-/* الإضاءة */
-
-const ambient =
-new THREE.AmbientLight(
-
-0xffffff,
-
-1.7
-
-);
 
 scene.add(
-ambient
-);
-
-
-const sun =
-new THREE.DirectionalLight(
-
+new THREE.AmbientLight(
 0xffffff,
-
-2.4
-
+1.8
+)
 );
 
-sun.position.set(
 
+const light =
+new THREE.DirectionalLight(
+0xffffff,
+2.5
+);
+
+light.position.set(
 5,
 3,
 5
-
 );
 
-scene.add(
-sun
-);
+scene.add(light);
 
 
-/* الكرة الأرضية */
-
-const earthGeometry =
-new THREE.SphereGeometry(
-
-1,
-
-96,
-
-96
-
-);
-
-
-const earthMaterial =
-new THREE.MeshPhongMaterial({
-
-color:0xffffff,
-
-shininess:8
-
-});
-
+/* الكرة */
 
 const earth =
 new THREE.Mesh(
 
-earthGeometry,
+new THREE.SphereGeometry(
+1,
+64,
+64
+),
 
-earthMaterial
+new THREE.MeshPhongMaterial({
+color:0xffffff,
+shininess:5
+})
 
 );
 
-
-/*
-هذه الزاوية تجعل إفريقيا
-وأوروبا في الواجهة عند البداية
-*/
-
-earth.rotation.y =
--Math.PI / 2;
+scene.add(earth);
 
 
-scene.add(
-earth
-);
+/* طبقات الخريطة */
 
+const borders =
+new THREE.Group();
 
-/* تحميل صورة الأرض */
+const labels =
+new THREE.Group();
 
-const textureLoader =
-new THREE.TextureLoader();
+earth.add(borders);
+earth.add(labels);
+/* صورة الأرض */
 
-
-textureLoader.load(
+new THREE.TextureLoader().load(
 
 "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg",
 
@@ -342,18 +201,10 @@ function(texture){
 texture.encoding =
 THREE.sRGBEncoding;
 
-texture.anisotropy =
-renderer.capabilities.getMaxAnisotropy();
-
-
-earthMaterial.map =
+earth.material.map =
 texture;
 
-earthMaterial.color.set(
-0xffffff
-);
-
-earthMaterial.needsUpdate =
+earth.material.needsUpdate =
 true;
 
 },
@@ -362,392 +213,111 @@ undefined,
 
 function(){
 
-earthMaterial.color.set(
-0x4c9ed0
-);
+earth.material.color =
+new THREE.Color(0x4c9ed0);
 
 }
 
 );
 
 
-/* مجموعة الحدود */
-
-const borders =
-new THREE.Group();
-
-earth.add(
-borders
-);
-
-
-/* مجموعة أسماء الدول */
-
-const labels =
-new THREE.Group();
-
-earth.add(
-labels
-);
-
-
 /*
-مهم جداً:
-
-الحدود قريبة جداً من سطح
-الكرة حتى لا تنزاح بصرياً.
+تحويل خطوط GeoJSON
+إلى سطح الكرة
 */
 
-const BORDER_RADIUS =
-1.003;
-
-
-const LABEL_RADIUS =
-1.025;
-/*
-تحويل إحداثيات الدولة
-إلى موقع مطابق لصورة الأرض
-على SphereGeometry
-*/
-
-function geoToVector(
-
-lat,
-
+function point(
 lon,
-
+lat,
 radius
-
 ){
 
-const latRad =
-THREE.MathUtils.degToRad(
-lat
-);
+const a =
+lat*Math.PI/180;
 
-const lonRad =
-THREE.MathUtils.degToRad(
-lon
-);
-
-
-/*
-هذه المعادلة هي الجزء المهم
-لتطابق GeoJSON مع صورة الأرض.
-
-x = cos(lat) * cos(lon)
-y = sin(lat)
-z = -cos(lat) * sin(lon)
-*/
-
-const x =
-radius *
-Math.cos(latRad) *
-Math.cos(lonRad);
-
-
-const y =
-radius *
-Math.sin(latRad);
-
-
-const z =
--radius *
-Math.cos(latRad) *
-Math.sin(lonRad);
+const b =
+lon*Math.PI/180;
 
 
 return new THREE.Vector3(
 
-x,
-y,
-z
+-radius*
+Math.cos(a)*
+Math.cos(b),
+
+radius*
+Math.sin(a),
+
+radius*
+Math.cos(a)*
+Math.sin(b)
 
 );
 
 }
 
 
+const BORDER =
+1.006;
+
+const LABEL =
+1.025;
 /*
-الحصول على اسم الدولة
-من مختلف نسخ GeoJSON
-*/
-
-function getCountryName(
-feature
-){
-
-const p =
-feature.properties || {};
-
-
-return (
-
-p.name ||
-
-p.NAME ||
-
-p.NAME_EN ||
-
-p.ADMIN ||
-
-p.ADMIN_NAME ||
-
-p.SOVEREIGNT ||
-
-""
-
-);
-
-}
-
-
-/*
-الحصول على رمز الدولة
-*/
-
-function getCountryISO(
-feature
-){
-
-const p =
-feature.properties || {};
-
-
-return String(
-
-p.ISO3166_1_Alpha_3 ||
-
-p["ISO3166-1-Alpha-3"] ||
-
-p.ISO_A3 ||
-
-p.ADM0_A3 ||
-
-p.ISO3 ||
-
-""
-
-).toUpperCase();
-
-}
-
-
-/*
-ضم الصحراء الغربية
-إلى مجموعة المغرب في العرض
-*/
-
-function getCountryKey(
-feature
-){
-
-const name =
-String(
-getCountryName(feature)
-).toLowerCase();
-
-
-const iso =
-getCountryISO(
-feature
-);
-
-
-/* المغرب */
-
-if(
-
-iso === "MAR" ||
-
-name === "morocco"
-
-){
-
-return "MAR";
-
-}
-
-
-/* الصحراء الغربية */
-
-if(
-
-iso === "ESH" ||
-
-name.includes(
-"western sahara"
-) ||
-
-name.includes(
-"west sahara"
-)
-
-){
-
-return "MAR";
-
-}
-
-
-return (
-
-iso ||
-
-name
-
-);
-
-}
-/*
-اختيار اسم المغرب
-*/
-
-function getDisplayName(
-group
-){
-
-if(
-group.key === "MAR"
-){
-
-return "Morocco";
-
-}
-
-
-if(
-group.name
-){
-
-return group.name;
-
-}
-
-
-return "Unknown";
-
-}
-
-
-/*
-إنشاء حدود الدولة
-*/
-
-function drawCountryGeometry(
-geometry
-){
-
-if(!geometry)
-return;
-
-
-/*
-Polygon
-*/
-
-if(
-geometry.type ===
-"Polygon"
-){
-
-geometry.coordinates.forEach(
-
-ring=>{
-
-drawRing(
-ring
-);
-
-}
-
-);
-
-}
-
-
-/*
-MultiPolygon
-*/
-
-if(
-geometry.type ===
-"MultiPolygon"
-){
-
-geometry.coordinates.forEach(
-
-polygon=>{
-
-polygon.forEach(
-
-ring=>{
-
-drawRing(
-ring
-);
-
-}
-
-);
-
-}
-
-);
-
-}
-
-}
-
-
-/*
-رسم حلقة حدود واحدة
+رسم حدود الدولة
 */
 
 function drawRing(
 ring
 ){
 
-if(
-!ring ||
-ring.length < 2
-){
-
+if(!ring || ring.length<2)
 return;
 
-}
+
+const points=[];
 
 
-const points = [];
+ring.forEach(
+p=>{
 
+points.push(
+point(
+p[0],
+p[1],
+BORDER
+)
+);
 
-for(
-let i=0;
-i<ring.length;
-i++
-){
-
-const point =
-ring[i];
-
-
-const lon =
-point[0];
-
-const lat =
-point[1];
+});
 
 
 points.push(
+points[0]
+);
 
-geoToVector(
 
-lat,
+const geometry =
+new THREE.BufferGeometry()
+.setFromPoints(points);
 
-lon,
 
-BORDER_RADIUS
+const material =
+new THREE.LineBasicMaterial({
 
+color:0x172033,
+
+transparent:true,
+
+opacity:0.9
+
+});
+
+
+borders.add(
+
+new THREE.Line(
+geometry,
+material
 )
 
 );
@@ -755,243 +325,105 @@ BORDER_RADIUS
 }
 
 
-/*
-إغلاق الحلقة
-*/
+/* رسم Polygon */
 
-if(
-points.length > 2
+function drawGeometry(
+geometry
 ){
 
-points.push(
-points[0].clone()
+if(
+geometry.type==="Polygon"
+){
+
+geometry.coordinates.forEach(
+drawRing
 );
 
 }
 
 
-const geometry =
-new THREE.BufferGeometry()
-.setFromPoints(
-points
+if(
+geometry.type==="MultiPolygon"
+){
+
+geometry.coordinates.forEach(
+polygon=>{
+
+polygon.forEach(
+drawRing
 );
-
-
-const material =
-new THREE.LineBasicMaterial({
-
-color:0x1b263b,
-
-transparent:true,
-
-opacity:0.92,
-
-depthTest:true,
-
-depthWrite:false
 
 });
 
-
-const line =
-new THREE.Line(
-
-geometry,
-
-material
-
-);
-
-
-borders.add(
-line
-);
+}
 
 }
 /*
 إنشاء اسم الدولة
 */
 
-function createLabel(
-
+function addLabel(
 name,
-
-lat,
-
 lon,
-
-area
-
+lat
 ){
-
-if(
-!name
-){
-
-return;
-
-}
-
-
-/*
-Canvas خاص بالاسم
-*/
 
 const canvas =
-document.createElement(
-"canvas"
-);
+document.createElement("canvas");
 
-
-canvas.width =
-768;
-
-canvas.height =
-128;
+canvas.width=512;
+canvas.height=80;
 
 
 const ctx =
-canvas.getContext(
-"2d"
-);
+canvas.getContext("2d");
 
 
-ctx.clearRect(
-
-0,
-0,
-
-768,
-128
-
-);
+let size=28;
 
 
-/*
-حجم الخط حسب طول الاسم
-*/
+if(name.length>18)
+size=22;
 
-let fontSize = 34;
+if(name.length>25)
+size=18;
 
-
-if(
-name.length > 18
-){
-
-fontSize = 27;
-
-}
-
-
-if(
-name.length > 25
-){
-
-fontSize = 22;
-
-}
-
-
-if(
-area < 0.08
-){
-
-fontSize = 22;
-
-}
-
-
-if(
-area < 0.03
-){
-
-fontSize = 18;
-
-}
-
-
-/*
-النص
-*/
 
 ctx.font =
-"bold " +
-fontSize +
-"px Arial";
+"bold "+size+"px Arial";
+
+ctx.textAlign="center";
+ctx.textBaseline="middle";
 
 
-ctx.textAlign =
-"center";
+/* حدود بيضاء */
 
-
-ctx.textBaseline =
-"middle";
-
-
-/*
-حد أبيض حتى يظهر الاسم
-فوق صورة الأرض
-*/
-
-ctx.strokeStyle =
-"rgba(255,255,255,0.95)";
-
-
-ctx.lineWidth =
-9;
-
+ctx.strokeStyle="#ffffff";
+ctx.lineWidth=7;
 
 ctx.strokeText(
-
 name,
-
-384,
-
-64
-
+256,
+40
 );
 
 
-/*
-لون الاسم
-*/
+/* الاسم */
 
-ctx.fillStyle =
-"#111827";
-
+ctx.fillStyle="#111827";
 
 ctx.fillText(
-
 name,
-
-384,
-
-64
-
+256,
+40
 );
 
-
-/*
-تحويل Canvas إلى Texture
-*/
 
 const texture =
 new THREE.CanvasTexture(
 canvas
 );
 
-
-texture.encoding =
-THREE.sRGBEncoding;
-
-
-texture.needsUpdate =
-true;
-
-
-/*
-Sprite
-*/
 
 const material =
 new THREE.SpriteMaterial({
@@ -1000,9 +432,7 @@ map:texture,
 
 transparent:true,
 
-depthTest:false,
-
-depthWrite:false
+depthTest:false
 
 });
 
@@ -1013,120 +443,117 @@ material
 );
 
 
-/*
-موضع الاسم
-*/
-
 sprite.position =
-geoToVector(
-
-lat,
-
+point(
 lon,
-
-LABEL_RADIUS
-
+lat,
+LABEL
 );
-
-
-/*
-حجم الاسم
-*/
-
-let width =
-0.30;
-
-
-let height =
-0.050;
-
-
-if(
-area < 0.10
-){
-
-width =
-0.24;
-
-height =
-0.040;
-
-}
-
-
-if(
-area < 0.04
-){
-
-width =
-0.19;
-
-height =
-0.032;
-
-}
 
 
 sprite.scale.set(
-
-width,
-
-height,
+0.28,
+0.044,
 1
-
 );
 
 
-/*
-الأسماء فوق الحدود
-*/
-
-sprite.renderOrder =
-10000;
-
-
-labels.add(
-sprite
-);
+labels.add(sprite);
 
 }
 /*
-تحميل الدول
+الحصول على اسم الدولة
+*/
+
+function nameOf(feature){
+
+const p =
+feature.properties || {};
+
+return (
+p.ADMIN ||
+p.NAME ||
+p.NAME_EN ||
+p.name ||
+p.SOVEREIGNT ||
+""
+);
+
+}
+
+
+/*
+تمييز المغرب والصحراء
+*/
+
+function countryKey(
+feature
+){
+
+const p =
+feature.properties || {};
+
+const name =
+String(
+nameOf(feature)
+).toLowerCase();
+
+
+const iso =
+String(
+p.ISO_A3 ||
+p.ADM0_A3 ||
+p.ISO3 ||
+""
+).toUpperCase();
+
+
+if(
+iso==="MAR" ||
+name==="morocco"
+){
+
+return "MAR";
+
+}
+
+
+if(
+iso==="ESH" ||
+name.includes("western sahara")
+){
+
+return "MAR";
+
+}
+
+
+return iso || name;
+
+}
+/*
+تحميل بيانات الدول
 */
 
 fetch(
-
 "https://raw.githubusercontent.com/datasets/geo-countries/main/data/countries.geojson"
-
 )
 
 .then(
+r=>{
 
-response=>{
+if(!r.ok)
+throw new Error("GeoJSON");
 
-if(
-!response.ok
-){
-
-throw new Error(
-"GeoJSON failed"
-);
+return r.json();
 
 }
-
-
-return response.json();
-
-}
-
 )
 
 .then(
-
 data=>{
 
-
-const countryGroups = {};
+const countries={};
 
 
 /*
@@ -1134,47 +561,27 @@ const countryGroups = {};
 */
 
 data.features.forEach(
-
 feature=>{
 
-
-if(
-!feature.geometry
-){
-
+if(!feature.geometry)
 return;
-
-}
 
 
 const key =
-getCountryKey(
-feature
-);
+countryKey(feature);
 
 
-if(
-!countryGroups[key]
-){
+if(!countries[key]){
 
-countryGroups[key] = {
-
-key:key,
-
-name:
-getCountryName(
-feature
-),
-
-features:[]
-
+countries[key]={
+features:[],
+name:nameOf(feature)
 };
 
 }
 
 
-countryGroups[key]
-.features.push(
+countries[key].features.push(
 feature
 );
 
@@ -1182,362 +589,170 @@ feature
 
 
 /*
-إنشاء حدود كل دولة
+رسم الدول
 */
 
-Object.keys(
-countryGroups
-).forEach(
-
+Object.keys(countries).forEach(
 key=>{
 
+const country =
+countries[key];
 
-const group =
-countryGroups[key];
 
-
-/*
-رسم كل أجزاء الدولة
-*/
-
-group.features.forEach(
-
+country.features.forEach(
 feature=>{
 
-drawCountryGeometry(
-
+drawGeometry(
 feature.geometry
-
 );
 
 });
 
 
 /*
-حساب مركز الدولة
+اسم المغرب
 */
 
-let center = null;
+if(key==="MAR"){
 
-let totalArea = 0;
-
-
-/*
-إذا كانت الدولة المغرب،
-نستخدم نقطة ثابتة داخل المغرب
-*/
-
-if(
-key === "MAR"
-){
-
-center = [
-
--6.5,
-
-31.7
-
-];
-
-totalArea = 20;
-
-}
-else{
-
-
-/*
-إذا كانت دولة عادية،
-نحسب المركز الجغرافي
-*/
-
-try{
-
-
-const collection = {
-
-type:
-"FeatureCollection",
-
-features:
-group.features
-
-};
-
-
-const centroid =
-d3.geoCentroid(
-collection
-);
-
-
-/*
-centroid:
-
-[longitude, latitude]
-*/
-
-if(
-centroid &&
-isFinite(centroid[0]) &&
-isFinite(centroid[1])
-){
-
-center =
-centroid;
-
-}
-
-
-}catch(error){
-
-console.warn(
-"Centroid error:",
-error
+addLabel(
+"Morocco",
+-6,
+31
 );
 
 }
 
-
+});
 /*
-احتياط في حالة فشل المركز
+إضافة أسماء باقي الدول
 */
 
-if(!center){
+Object.keys(countries).forEach(
+key=>{
 
-const first =
-group.features[0];
-
-
-if(
-first &&
-first.geometry &&
-first.geometry.coordinates
-){
-
-const coordinates =
-first.geometry.coordinates;
+if(key==="MAR")
+return;
 
 
-let ring = null;
+const country =
+countries[key];
 
 
-if(
-first.geometry.type ===
-"Polygon"
-){
+let feature =
+country.features[0];
 
-ring =
-coordinates[0];
 
-}
+let ring=null;
 
 
 if(
-first.geometry.type ===
-"MultiPolygon"
-){
-
-if(
-coordinates[0]
+feature.geometry.type==="Polygon"
 ){
 
 ring =
-coordinates[0][0];
-
-}
+feature.geometry.coordinates[0];
 
 }
 
 
 if(
-ring &&
-ring.length
+feature.geometry.type==="MultiPolygon"
 ){
 
-let lon = 0;
+ring =
+feature.geometry.coordinates[0][0];
 
-let lat = 0;
+}
+
+
+if(!ring)
+return;
+
+
+/*
+حساب مركز تقريبي
+*/
+
+let lon=0;
+let lat=0;
 
 
 ring.forEach(
-
 p=>{
 
-lon += p[0];
-
-lat += p[1];
-
-}
-
-);
-
-
-center = [
-
-lon / ring.length,
-
-lat / ring.length
-
-];
-
-}
-
-}
-
-}
-
-}
-
-
-/*
-حساب مساحة تقريبية
-من أجل حجم الاسم
-*/
-
-if(
-!totalArea
-){
-
-try{
-
-totalArea =
-d3.geoArea({
-
-type:
-"FeatureCollection",
-
-features:
-group.features
-
-});
-
-}catch(error){
-
-totalArea =
-0.1;
-
-}
-
-}
-
-
-/*
-إضافة اسم الدولة
-*/
-
-if(
-center
-){
-
-const name =
-getDisplayName(
-group
-);
-
-
-createLabel(
-
-name,
-
-center[1],
-
-center[0],
-
-totalArea
-
-);
-
-}
+lon+=p[0];
+lat+=p[1];
 
 });
 
 
+lon/=ring.length;
+lat/=ring.length;
+
+
 /*
-إخفاء رسالة التحميل
+إضافة الاسم
 */
 
-loading.style.display =
-"none";
+addLabel(
+country.name,
+lon,
+lat
+);
+
+});
+
+
+loading.style.display="none";
 
 }
 
 )
 
 .catch(
-
 error=>{
 
-console.error(
-error
-);
+console.error(error);
 
-
-loading.innerText =
-"تعذر تحميل بيانات الدول";
+loading.innerText=
+"تعذر تحميل الخريطة";
 
 }
 );
 /*
-إظهار أسماء الدول
-الموجودة أمام المستخدم فقط
+إظهار الأسماء الموجودة
+في الجهة الأمامية فقط
 */
 
-const worldPosition =
+const cameraPoint =
 new THREE.Vector3();
 
-
-const cameraDirection =
+const labelPoint =
 new THREE.Vector3();
 
 
 function updateLabels(){
 
-/*
-موقع الكاميرا من مركز الكرة
-*/
-
-cameraDirection.copy(
-camera.position
-);
-
-cameraDirection.normalize();
+cameraPoint
+.copy(camera.position)
+.normalize();
 
 
 labels.children.forEach(
-
 sprite=>{
 
-
-/*
-الحصول على موقع الاسم
-الحقيقي بعد دوران الكرة
-*/
-
 sprite.getWorldPosition(
-worldPosition
+labelPoint
 );
 
+labelPoint.normalize();
 
-worldPosition.normalize();
-
-
-/*
-قياس هل الاسم في الجهة
-المواجهة للكاميرا
-*/
-
-const visibility =
-worldPosition.dot(
-cameraDirection
-);
-
-
-/*
-أظهر الاسم إذا كان أمام الكرة
-*/
 
 sprite.visible =
-visibility > 0.08;
+labelPoint.dot(
+cameraPoint
+)>0;
 
 });
 
@@ -1545,37 +760,7 @@ visibility > 0.08;
 
 
 /*
-تحسين ظهور الخطوط
-*/
-
-function updateBorders(){
-
-borders.children.forEach(
-
-line=>{
-
-line.visible =
-true;
-
-}
-
-);
-
-
-/*
-تدوير الكرة ببطء
-*/
-
-function rotateEarth(){
-
-earth.rotation.y +=
-0.00012;
-
-}
-
-
-/*
-الحركة الرئيسية
+التشغيل
 */
 
 function animate(){
@@ -1584,163 +769,40 @@ requestAnimationFrame(
 animate
 );
 
-
-/*
-دوران الكرة
-*/
-
-rotateEarth();
-
-
-/*
-تحريك التحكم
-*/
-
 controls.update();
-
-
-/*
-تحديث الأسماء
-*/
 
 updateLabels();
 
-
-/*
-تحديث الحدود
-*/
-
-updateBorders();
-
-
-/*
-الرسم
-*/
-
 renderer.render(
-
 scene,
-
 camera
-
 );
 
 }
 
-
-/*
-بدء التشغيل
-*/
-
 animate();
+
+
 /*
-تغيير حجم الخريطة
-عند تغيير حجم الشاشة
+تغيير حجم الشاشة
 */
 
 window.addEventListener(
-
 "resize",
-
-function(){
-
-const width =
-window.innerWidth;
-
-const height =
-window.innerHeight;
-
-
-/*
-تحديث الكاميرا
-*/
+()=>{
 
 camera.aspect =
-width / height;
-
+window.innerWidth/
+window.innerHeight;
 
 camera.updateProjectionMatrix();
 
-
-/*
-تحديث الرندر
-*/
-
 renderer.setSize(
-
-width,
-
-height
-
-);
-
-
-renderer.setPixelRatio(
-
-Math.min(
-
-window.devicePixelRatio || 1,
-
-2
-
+window.innerWidth,
+window.innerHeight
 );
 
 });
-
-
-/*
-إعادة حساب الأسماء
-عند دوران المستخدم للكرة
-*/
-
-renderer.domElement.addEventListener(
-
-"touchend",
-
-function(){
-
-setTimeout(
-
-function(){
-
-updateLabels();
-
-},
-
-50
-
-);
-
-});
-
-
-renderer.domElement.addEventListener(
-
-"mouseup",
-
-function(){
-
-setTimeout(
-
-function(){
-
-updateLabels();
-
-},
-
-50
-
-);
-
-});
-
-
-/*
-منع سحب الصفحة على الهاتف
-*/
-
-renderer.domElement.style.touchAction =
-"none";
 
 
 </script>
