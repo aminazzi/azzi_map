@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
+
+<title>AZZI SOLAR SYSTEM 3D</title>
+
+<style>
+
+html,body{
+margin:0;
+padding:0;
+width:100%;
+height:100%;
+overflow:hidden;
+background:#000;
+font-family:Arial,sans-serif;
+}
+
+#space{
+position:fixed;
+inset:0;
+width:100%;
+height:100%;
+}
+
+.title{
+position:fixed;
+top:15px;
+right:15px;
+z-index:10;
+
+padding:10px 16px;
+
+background:rgba(0,0,0,.55);
+color:#fff;
+
+border:1px solid rgba(255,255,255,.15);
+
+border-radius:14px;
+
+font-size:18px;
+font-weight:bold;
+
+backdrop-filter:blur(8px);
+}
+
+.info{
+position:fixed;
+bottom:15px;
+left:15px;
+z-index:10;
+
+padding:8px 12px;
+
+background:rgba(0,0,0,.5);
+color:#fff;
+
+border-radius:10px;
+
+font-size:12px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="title">
+☀️ AZZI SOLAR SYSTEM 3D
+</div>
+
+<div class="info">
+اسحب للدوران • مرر للتكبير والتصغير
+</div>
+
+<div id="space"></div>
+<script src="
+https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js
+"></script>
+
+<script src="
+https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js
+"></script>
+
+<script>
+
+const container =
+document.getElementById("space");
+
+
+/* المشهد */
+
+const scene =
+new THREE.Scene();
+
+
+/* الكاميرا */
+
+const camera =
+new THREE.PerspectiveCamera(
+55,
+window.innerWidth /
+window.innerHeight,
+0.1,
+2000
+);
+
+camera.position.set(
+0,
+18,
+38
+);
+
+
+/* الرندر */
+
+const renderer =
+new THREE.WebGLRenderer({
+antialias:true
+});
+
+renderer.setPixelRatio(
+Math.min(
+window.devicePixelRatio || 1,
+2
+));
+
+renderer.setSize(
+window.innerWidth,
+window.innerHeight
+);
+
+renderer.outputEncoding =
+THREE.sRGBEncoding;
+
+container.appendChild(
+renderer.domElement
+);
+
+
+/* التحكم */
+
+const controls =
+new THREE.OrbitControls(
+camera,
+renderer.domElement
+);
+
+controls.enableDamping = true;
+
+controls.dampingFactor = 0.05;
+
+controls.enablePan = true;
+
+controls.minDistance = 5;
+
+controls.maxDistance = 150;
+/* خلفية الفضاء */
+
+scene.background =
+new THREE.Color(0x000000);
+
+
+/* نجوم الخلفية */
+
+const starGeometry =
+new THREE.BufferGeometry();
+
+
+const starCount = 7000;
+
+const starPositions =
+new Float32Array(
+starCount * 3
+);
+
+
+for(
+let i=0;
+i<starCount;
+i++
+){
+
+const r =
+350 + Math.random()*500;
+
+const theta =
+Math.random()*Math.PI*2;
+
+const phi =
+Math.acos(
+2*Math.random()-1
+);
+
+
+starPositions[
+i*3
+] =
+r*
+Math.sin(phi)*
+Math.cos(theta);
+
+
+starPositions[
+i*3+1
+] =
+r*
+Math.cos(phi);
+
+
+starPositions[
+i*3+2
+] =
+r*
+Math.sin(phi)*
+Math.sin(theta);
+
+}
+
+
+starGeometry.setAttribute(
+"position",
+new THREE.BufferAttribute(
+starPositions,
+3
+)
+);
+
+
+const starMaterial =
+new THREE.PointsMaterial({
+
+color:0xffffff,
+
+size:0.7,
+
+sizeAttenuation:true
+
+});
+
+
+const stars =
+new THREE.Points(
+starGeometry,
+starMaterial
+);
+
+scene.add(stars);
+/* نجوم المجرة */
+
+const galaxyGeometry =
+new THREE.BufferGeometry();
+
+
+const galaxyCount = 5000;
+
+
+const galaxyPositions =
+new Float32Array(
+galaxyCount * 3
+);
+
+
+for(
+let i=0;
+i<galaxyCount;
+i++
+){
+
+const radius =
+Math.random()*240;
+
+const angle =
+radius*0.055 +
+Math.random()*0.8;
+
+const spread =
+(Math.random()-0.5) *
+(3 + radius*0.025);
+
+
+galaxyPositions[
+i*3
+] =
+Math.cos(angle)*
+radius;
+
+
+galaxyPositions[
+i*3+1
+] =
+spread;
+
+
+galaxyPositions[
+i*3+2
+] =
+Math.sin(angle)*
+radius;
+
+}
+
+
+galaxyGeometry.setAttribute(
+"position",
+new THREE.BufferAttribute(
+galaxyPositions,
+3
+)
+);
+
+
+const galaxyMaterial =
+new THREE.PointsMaterial({
+
+color:0x9abfff,
+
+size:0.45,
+
+transparent:true,
+
+opacity:0.5
+
+});
+
+
+const galaxy =
+new THREE.Points(
+galaxyGeometry,
+galaxyMaterial
+);
+
+galaxy.rotation.x =
+0.35;
+
+scene.add(galaxy);
+/* إضاءة عامة */
+
+const ambient =
+new THREE.AmbientLight(
+0xffffff,
+0.12
+);
+
+scene.add(ambient);
+
+
+/* الشمس */
+
+const sunLight =
+new THREE.PointLight(
+0xffffff,
+6,
+1000
+);
+
+sunLight.position.set(
+0,
+0,
+0
+);
+
+scene.add(sunLight);
+
+
+/* الشمس */
+
+const sunGeometry =
+new THREE.SphereGeometry(
+2.2,
+64,
+64
+);
+
+
+const sunMaterial =
+new THREE.MeshBasicMaterial({
+color:0xffcc33
+});
+
+
+const sun =
+new THREE.Mesh(
+sunGeometry,
+sunMaterial
+);
+
+scene.add(sun);
+/* هالة الشمس */
+
+const glowGeometry =
+new THREE.SphereGeometry(
+2.7,
+48,
+48
+);
+
+
+const glowMaterial =
+new THREE.MeshBasicMaterial({
+
+color:0xffaa22,
+
+transparent:true,
+
+opacity:0.18,
+
+side:THREE.BackSide
+
+});
+
+
+const glow =
+new THREE.Mesh(
+glowGeometry,
+glowMaterial
+);
+
+scene.add(glow);
+
+
+/* مجموعة النظام الشمسي */
+
+const solarSystem =
+new THREE.Group();
+
+scene.add(
+solarSystem
+);
+
+
+/* الشمس داخل المجموعة */
+
+solarSystem.add(
+sun
+);
+
+solarSystem.add(
+glow
+);
+
+
+/* دالة كوكب */
+
+function planet(
+size,
+color,
+distance
+){
+
+const geometry =
+new THREE.SphereGeometry(
+size,
+32,
+32
+);
+
+
+const material =
+new THREE.MeshPhongMaterial({
+color:color,
+shininess:8
+});
+
+
+const mesh =
+new THREE.Mesh(
+geometry,
+material
+);
+
+
+mesh.position.x =
+distance;
+
+
+solarSystem.add(mesh);
+
+
+return mesh;
+
+}
+/* الكواكب */
+
+const mercury =
+planet(
+0.22,
+0x9b8d7a,
+4.2
+);
+
+
+const venus =
+planet(
+0.38,
+0xd8b36a,
+5.8
+);
+
+
+const earth =
+planet(
+0.42,
+0x3c78d8,
+7.4
+);
+
+
+const mars =
+planet(
+0.31,
+0xb34b32,
+9.1
+);
+
+
+const jupiter =
+planet(
+1.05,
+0xc89d75,
+12.5
+);
+
+
+const saturn =
+planet(
+0.90,
+0xd7c08a,
+16.0
+);
+
+
+const uranus =
+planet(
+0.58,
+0x79d7e6,
+19.5
+);
+
+
+const neptune =
+planet(
+0.56,
+0x3c63d9,
+22.8
+);
+/* حلقات زحل */
+
+const saturnRingGeometry =
+new THREE.RingGeometry(
+1.25,
+1.85,
+64
+);
+
+
+const saturnRingMaterial =
+new THREE.MeshBasicMaterial({
+
+color:0xc7b99a,
+
+side:THREE.DoubleSide,
+
+transparent:true,
+
+opacity:0.75
+
+});
+
+
+const saturnRing =
+new THREE.Mesh(
+saturnRingGeometry,
+saturnRingMaterial
+);
+
+
+saturnRing.rotation.x =
+Math.PI / 2;
+
+
+saturn.add(
+saturnRing
+);
+
+
+/* حلقات أورانوس */
+
+const uranusRingGeometry =
+new THREE.RingGeometry(
+0.78,
+1.02,
+48
+);
+
+
+const uranusRingMaterial =
+new THREE.MeshBasicMaterial({
+
+color:0x9fcbd0,
+
+side:THREE.DoubleSide,
+
+transparent:true,
+
+opacity:0.35
+
+});
+
+
+const uranusRing =
+new THREE.Mesh(
+uranusRingGeometry,
+uranusRingMaterial
+);
+
+
+uranusRing.rotation.x =
+Math.PI / 2;
+
+
+uranus.add(
+uranusRing
+);
+/* القمر */
+
+const moon =
+planet(
+0.12,
+0xbfc1c5,
+0
+);
+
+
+/*
+القمر يجب ألا يكون
+على مسافة النظام الشمسي.
+نضعه حول الأرض.
+*/
+
+solarSystem.remove(
+moon
+);
+
+
+earth.add(
+moon
+);
+
+
+moon.position.set(
+0.85,
+0.08,
+0
+);
+
+
+/* تضاريس بسيطة للقمر */
+
+moon.material.bumpScale =
+0.15;
+
+
+/* سرعة الدوران */
+
+const speeds = {
+
+mercury:0.020,
+
+venus:0.015,
+
+earth:0.010,
+
+mars:0.008,
+
+jupiter:0.004,
+
+saturn:0.003,
+
+uranus:0.002,
+
+neptune:0.0015
+
+};
+/* المدارات */
+
+function orbit(
+radius
+){
+
+const geometry =
+new THREE.RingGeometry(
+radius,
+radius+0.008,
+128
+);
+
+
+const material =
+new THREE.MeshBasicMaterial({
+
+color:0x596273,
+
+side:THREE.DoubleSide,
+
+transparent:true,
+
+opacity:0.35
+
+});
+
+
+const ring =
+new THREE.Mesh(
+geometry,
+material
+);
+
+
+ring.rotation.x =
+Math.PI/2;
+
+
+solarSystem.add(
+ring
+);
+
+}
+
+
+/* مدارات الكواكب */
+
+orbit(4.2);
+
+orbit(5.8);
+
+orbit(7.4);
+
+orbit(9.1);
+
+orbit(12.5);
+
+orbit(16.0);
+
+orbit(19.5);
+
+orbit(22.8);
+/* أسماء الكواكب */
+
+function label(
+text,
+object
+){
+
+const canvas =
+document.createElement(
+"canvas"
+);
+
+canvas.width = 512;
+
+canvas.height = 96;
+
+
+const ctx =
+canvas.getContext(
+"2d"
+);
+
+
+ctx.font =
+"bold 30px Arial";
+
+ctx.textAlign =
+"center";
+
+ctx.textBaseline =
+"middle";
+
+
+ctx.fillStyle =
+"#ffffff";
+
+ctx.strokeStyle =
+"#000000";
+
+ctx.lineWidth = 8;
+
+
+ctx.strokeText(
+text,
+256,
+48
+);
+
+
+ctx.fillText(
+text,
+256,
+48
+);
+
+
+const texture =
+new THREE.CanvasTexture(
+canvas
+);
+
+
+const material =
+new THREE.SpriteMaterial({
+
+map:texture,
+
+transparent:true,
+
+depthTest:false
+
+});
+
+
+const sprite =
+new THREE.Sprite(
+material
+);
+
+
+sprite.scale.set(
+1.8,
+0.34,
+1
+);
+
+
+object.add(
+sprite
+);
+
+
+sprite.position.set(
+0,
+object.geometry.parameters.radius + 0.35,
+0
+);
+
+}
+label(
+"عطارد",
+mercury
+);
+
+label(
+"الزهرة",
+venus
+);
+
+label(
+"الأرض",
+earth
+);
+
+label(
+"المريخ",
+mars
+);
+
+label(
+"المشتري",
+jupiter
+);
+
+label(
+"زحل",
+saturn
+);
+
+label(
+"أورانوس",
+uranus
+);
+
+label(
+"نبتون",
+neptune
+);
+
+label(
+"الشمس",
+sun
+);
+
+
+/* دوران الكواكب */
+
+function rotatePlanets(){
+
+mercury.rotation.y +=
+speeds.mercury;
+
+venus.rotation.y +=
+speeds.venus;
+
+earth.rotation.y +=
+speeds.earth;
+
+mars.rotation.y +=
+speeds.mars;
+
+jupiter.rotation.y +=
+speeds.jupiter;
+
+saturn.rotation.y +=
+speeds.saturn;
+
+uranus.rotation.y +=
+speeds.uranus;
+
+neptune.rotation.y +=
+speeds.neptune;
+
+sun.rotation.y +=
+0.001;
+
+}
+/* دوران حول الشمس */
+
+let orbitTime = 0;
+
+
+function movePlanets(){
+
+orbitTime += 0.001;
+
+
+/* عطارد */
+
+mercury.position.x =
+4.2 *
+Math.cos(
+orbitTime*4
+);
+
+mercury.position.z =
+4.2 *
+Math.sin(
+orbitTime*4
+);
+
+
+/* الزهرة */
+
+venus.position.x =
+5.8 *
+Math.cos(
+orbitTime*2.8
+);
+
+venus.position.z =
+5.8 *
+Math.sin(
+orbitTime*2.8
+);
+
+
+/* الأرض */
+
+earth.position.x =
+7.4 *
+Math.cos(
+orbitTime*2
+);
+
+earth.position.z =
+7.4 *
+Math.sin(
+orbitTime*2
+);
+
+
+/* المريخ */
+
+mars.position.x =
+9.1 *
+Math.cos(
+orbitTime*1.6
+);
+
+mars.position.z =
+9.1 *
+Math.sin(
+orbitTime*1.6
+);
+
+
+/* المشتري */
+
+jupiter.position.x =
+12.5 *
+Math.cos(
+orbitTime*0.8
+);
+
+jupiter.position.z =
+12.5 *
+Math.sin(
+orbitTime*0.8
+);
+/* زحل */
+
+saturn.position.x =
+16 *
+Math.cos(
+orbitTime*0.6
+);
+
+saturn.position.z =
+16 *
+Math.sin(
+orbitTime*0.6
+);
+
+
+/* أورانوس */
+
+uranus.position.x =
+19.5 *
+Math.cos(
+orbitTime*0.4
+);
+
+uranus.position.z =
+19.5 *
+Math.sin(
+orbitTime*0.4
+);
+
+
+/* نبتون */
+
+neptune.position.x =
+22.8 *
+Math.cos(
+orbitTime*0.3
+);
+
+neptune.position.z =
+22.8 *
+Math.sin(
+orbitTime*0.3
+);
+
+
+/* القمر يدور حول الأرض */
+
+const moonTime =
+orbitTime * 12;
+
+
+moon.position.x =
+0.85 *
+Math.cos(moonTime);
+
+moon.position.z =
+0.85 *
+Math.sin(moonTime);
+
+
+rotatePlanets();
+
+
+/* حركة الخلفية */
+
+stars.rotation.y +=
+0.00008;
+
+galaxy.rotation.y +=
+0.00015;
+
+}
+/* التشغيل */
+
+function animate(){
+
+requestAnimationFrame(
+animate
+);
+
+
+movePlanets();
+
+
+controls.update();
+
+
+renderer.render(
+scene,
+camera
+);
+
+}
+
+animate();
+
+
+/* تغيير حجم الشاشة */
+
+window.addEventListener(
+"resize",
+function(){
+
+camera.aspect =
+window.innerWidth /
+window.innerHeight;
+
+camera.updateProjectionMatrix();
+
+renderer.setSize(
+window.innerWidth,
+window.innerHeight
+);
+
+});
+
+
+</script>
+
+</body>
+
+</html>
