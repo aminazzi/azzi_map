@@ -1,338 +1,468 @@
+<!-- الجزء 1 / 5 -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1.0">
 
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+<title>AZZI WORLD 3D</title>
 
-  <title>azzi_map</title>
+<style>
+html,body{
+margin:0;
+width:100%;
+height:100%;
+overflow:hidden;
+background:#fff;
+font-family:Arial,sans-serif;
+}
 
-  <style>
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: white;
-    }
+#globe{
+width:100%;
+height:100%;
+}
 
-    #earth {
-      width: 100%;
-      height: 100%;
-    }
-
-    .title {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 100;
-
-      background: white;
-
-      padding: 14px 22px;
-
-      border-radius: 18px;
-
-      color: #1e293b;
-
-      font-family: Arial, sans-serif;
-
-      font-size: 22px;
-
-      font-weight: bold;
-
-      box-shadow:
-        0 5px 25px rgba(0,0,0,0.12);
-    }
-
-    #error {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-
-      transform: translate(-50%, -50%);
-
-      font-family: Arial, sans-serif;
-
-      font-size: 18px;
-
-      color: #334155;
-
-      text-align: center;
-
-      display: none;
-    }
-  </style>
+.title{
+position:fixed;
+top:18px;
+right:18px;
+z-index:20;
+background:#fff;
+padding:12px 20px;
+border-radius:15px;
+box-shadow:0 4px 18px #0002;
+font-size:20px;
+font-weight:bold;
+color:#172033;
+}
+</style>
 </head>
 
 <body>
 
-  <div class="title">
-    🌍azzi_map
-  </div>
+<div class="title">
+🌍 AZZI WORLD
+</div>
 
-  <div id="error">
-    لا يمكن تشغيل الخريطة 3D على هذا المتصفح.
-  </div>
+<div id="globe"></div>
+<!-- الجزء 2 / 5 -->
 
-  <div id="earth"></div>
 <script type="importmap">
-  {
-    "imports": {
-      "three":
-      "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-
-      "three/addons/":
-      "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-    }
+{
+  "imports":{
+    "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
   }
-  </script>
-
-
-  <script type="module">
-
-    import * as THREE from "three";
-
-    import { OrbitControls }
-      from "three/addons/controls/OrbitControls.js";
-
-
-    const container =
-      document.getElementById("earth");
-
-
-    const scene =
-      new THREE.Scene();
-
-
-    scene.background =
-      new THREE.Color(0xffffff);
-
-
-    const camera =
-      new THREE.PerspectiveCamera(
-        45,
-        window.innerWidth /
-        window.innerHeight,
-        0.1,
-        1000
-      );
-
-
-    camera.position.z = 3;
-
-
-    const renderer =
-      new THREE.WebGLRenderer({
-        antialias: true
-      });
-
-
-    renderer.setPixelRatio(
-      Math.min(window.devicePixelRatio, 2)
-    );
-
-
-    renderer.setSize(
-      window.innerWidth,
-      window.innerHeight
-    );
-
-
-    container.appendChild(renderer.domElement);
-
-
-    const controls =
-      new OrbitControls(
-        camera,
-        renderer.domElement
-      );
-
-
-    controls.enableDamping = true;
-
-    controls.enablePan = false;
-
-    controls.minDistance = 1.5;
-
-    controls.maxDistance = 5;
-/*
-     * الكرة الأرضية
-     */
-
-    const geometry =
-      new THREE.SphereGeometry(
-        1,
-        64,
-        64
-      );
-
-
-    /*
-     * لون الأرض الأساسي
-     * سيظهر حتى لو فشلت صورة الخريطة
-     */
-
-    const material =
-      new THREE.MeshStandardMaterial({
-        color: 0x2389c9,
-        roughness: 0.8,
-        metalness: 0
-      });
-
-
-    const earth =
-      new THREE.Mesh(
-        geometry,
-        material
-      );
-
-
-    scene.add(earth);
-
-
-    /*
-     * إضاءة
-     */
-
-    const light =
-      new THREE.DirectionalLight(
-        0xffffff,
-        3
-      );
-
-
-    light.position.set(
-      5,
-      3,
-      5
-    );
-
-
-    scene.add(light);
-
-
-    const ambient =
-      new THREE.AmbientLight(
-        0xffffff,
-        1.5
-      );
-
-
-    scene.add(ambient);
-
-
-    /*
-     * محاولة إضافة صورة الأرض
-     */
-
-    const loader =
-      new THREE.TextureLoader();
-
-
-    loader.load(
-      "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
-
-      function(texture) {
-
-        material.map = texture;
-
-        material.color.set(0xffffff);
-
-        material.needsUpdate = true;
-
-      },
-
-      undefined,
-
-      function() {
-
-        console.log(
-          "تم استخدام الكرة بدون صورة الأرض"
-        );
-
-      }
-    );
-/*
-     * دوران تلقائي
-     */
-
-    function animate() {
-
-      requestAnimationFrame(animate);
-
-
-      earth.rotation.y += 0.0015;
-
-
-      controls.update();
-
-
-      renderer.render(
-        scene,
-        camera
-      );
-
-    }
-
-
-    animate();
-
-
-    /*
-     * تغيير حجم الخريطة
-     */
-
-    window.addEventListener(
-      "resize",
-      function() {
-
-        camera.aspect =
-          window.innerWidth /
-          window.innerHeight;
-
-
-        camera.updateProjectionMatrix();
-
-
-        renderer.setSize(
-          window.innerWidth,
-          window.innerHeight
-        );
-
-      }
-    );
-
-
-    /*
-     * اختبار WebGL
-     */
-
-    if (!renderer.getContext()) {
-
-      document.getElementById(
-        "error"
-      ).style.display = "block";
-
-    }
-
-<!-- مهم جدًا داخل index.html -->
+}
+</script>
 
 <script type="module">
-  window.azziMap = {
-    THREE,
-    scene,
-    earth
-  };
+
+import * as THREE from "three";
+
+import {
+  OrbitControls
+} from "three/addons/controls/OrbitControls.js";
+
+
+const box =
+document.getElementById("globe");
+
+
+const scene =
+new THREE.Scene();
+
+scene.background =
+new THREE.Color(0xffffff);
+
+
+const camera =
+new THREE.PerspectiveCamera(
+40,
+innerWidth / innerHeight,
+0.1,
+100
+);
+
+camera.position.set(0,0,3);
+
+
+const renderer =
+new THREE.WebGLRenderer({
+antialias:true
+});
+
+renderer.setPixelRatio(
+Math.min(devicePixelRatio,2)
+);
+
+renderer.setSize(
+innerWidth,
+innerHeight
+);
+
+box.appendChild(
+renderer.domElement
+);
+
+
+const controls =
+new OrbitControls(
+camera,
+renderer.domElement
+);
+
+controls.enableDamping=true;
+controls.enablePan=false;
+controls.minDistance=1.5;
+controls.maxDistance=5;
+<!-- الجزء 3 / 5 -->
+
+const light =
+new THREE.DirectionalLight(
+0xffffff,
+3
+);
+
+light.position.set(5,3,5);
+
+scene.add(light);
+
+
+scene.add(
+new THREE.AmbientLight(
+0xffffff,
+1.8
+)
+);
+
+
+/* الكرة الأرضية */
+
+const earth =
+new THREE.Mesh(
+
+new THREE.SphereGeometry(
+1,
+64,
+64
+),
+
+new THREE.MeshStandardMaterial({
+color:0x247fbd,
+roughness:.8
+})
+
+);
+
+scene.add(earth);
+
+
+/* صورة الأرض */
+
+const loader =
+new THREE.TextureLoader();
+
+loader.load(
+"https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
+
+texture=>{
+
+earth.material.map=texture;
+
+earth.material.color.set(
+0xffffff
+);
+
+earth.material.needsUpdate=true;
+
+}
+);
+
+
+/* طبقة الدول */
+
+const countryLayer =
+new THREE.Group();
+
+earth.add(countryLayer);
+
+
+const R=1.008;
+
+
+function xyz(lat,lon,r=R){
+
+const a =
+THREE.MathUtils.degToRad(lat);
+
+const b =
+THREE.MathUtils.degToRad(lon);
+
+return new THREE.Vector3(
+r*Math.cos(a)*Math.sin(b),
+r*Math.sin(a),
+r*Math.cos(a)*Math.cos(b)
+);
+
+}
+<!-- الجزء 4 / 5 -->
+
+function drawRing(ring){
+
+const points =
+ring.map(
+p=>xyz(p[1],p[0])
+);
+
+if(points.length<2)return;
+
+const geometry =
+new THREE.BufferGeometry()
+.setFromPoints(points);
+
+const material =
+new THREE.LineBasicMaterial({
+color:0x111827,
+transparent:true,
+opacity:.8
+});
+
+countryLayer.add(
+new THREE.Line(
+geometry,
+material
+)
+);
+
+}
+
+
+function getName(feature){
+
+return(
+feature.properties.ADMIN ||
+feature.properties.NAME ||
+feature.properties.name ||
+""
+);
+
+}
+
+
+function getCenter(feature){
+
+let coords =
+feature.geometry.coordinates;
+
+if(
+feature.geometry.type ===
+"MultiPolygon"
+){
+coords=coords[0];
+}
+
+if(!coords || !coords[0])
+return [0,0];
+
+const ring=coords[0];
+
+let lat=0;
+let lon=0;
+
+ring.forEach(p=>{
+lon+=p[0];
+lat+=p[1];
+});
+
+return[
+lat/ring.length,
+lon/ring.length
+];
+
+}
+
+
+function makeLabel(
+text,
+lat,
+lon
+){
+
+const canvas =
+document.createElement(
+"canvas"
+);
+
+canvas.width=512;
+canvas.height=80;
+
+const ctx =
+canvas.getContext("2d");
+
+ctx.font =
+"bold 28px Arial";
+
+ctx.textAlign="center";
+ctx.textBaseline="middle";
+ctx.fillStyle="#111827";
+
+ctx.fillText(
+text,
+256,
+40
+);
+
+const texture =
+new THREE.CanvasTexture(
+canvas
+);
+
+const sprite =
+new THREE.Sprite(
+new THREE.SpriteMaterial({
+map:texture,
+transparent:true,
+depthTest:false
+})
+);
+
+sprite.position =
+xyz(lat,lon,1.025);
+
+sprite.scale.set(
+.20,
+.031,
+1
+);
+
+countryLayer.add(
+sprite
+);
+<!-- الجزء 5 / 5 -->
+
+}
+
+
+/* تحميل حدود وأسماء الدول */
+
+fetch(
+"https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
+)
+
+.then(response =>
+response.json()
+)
+
+.then(data=>{
+
+data.features.forEach(
+feature=>{
+
+const geometry =
+feature.geometry;
+
+if(!geometry)return;
+
+
+if(
+geometry.type ===
+"Polygon"
+){
+
+geometry.coordinates
+.forEach(drawRing);
+
+}
+
+
+if(
+geometry.type ===
+"MultiPolygon"
+){
+
+geometry.coordinates
+.forEach(
+polygon=>{
+
+polygon.forEach(
+drawRing
+);
+
+}
+);
+
+}
+
+
+const name =
+getName(feature);
+
+if(name){
+
+const center =
+getCenter(feature);
+
+makeLabel(
+name,
+center[0],
+center[1]
+);
+
+}
+
+}
+);
+
+});
+
+
+/* تشغيل الخريطة */
+
+function animate(){
+
+requestAnimationFrame(
+animate
+);
+
+earth.rotation.y +=
+0.0008;
+
+controls.update();
+
+renderer.render(
+scene,
+camera
+);
+
+}
+
+animate();
+
+
+/* دعم الهاتف */
+
+window.addEventListener(
+"resize",
+()=>{
+
+camera.aspect =
+innerWidth / innerHeight;
+
+camera.updateProjectionMatrix();
+
+renderer.setSize(
+innerWidth,
+innerHeight
+);
+
+}
+);
+
 </script>
 
-<script
-  type="module"
-  src="assest/js/countries.js">
-</script>
 </body>
 </html>
+     
